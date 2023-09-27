@@ -8,3 +8,6 @@ def runner(videoLink, quality):
     elif int(quality) == 2:
         ytd.downloadBestQualityAvailable(videoLink)
         avs.stitch(ytd.title)
+    elif int(quality) == 3:
+        ytd.downloadAudio(videoLink)
+        avs.convertMp4ToMp3(ytd.title)
