@@ -1,5 +1,5 @@
 import DownloadRunner as dr
-from pytube import YouTube
+
 print("Enter quality of video \n1. Standard (max 720p)\n2. Best available resolution\n3. Audio only")
 
 quality = input()
