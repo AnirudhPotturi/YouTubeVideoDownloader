@@ -6,6 +6,9 @@ def initDownload(videoLink):
     global title
     youtubeObject = YouTube(videoLink)
     title = youtubeObject.title
+    for character in title:
+        if not character.isalnum():
+            title = title.replace(character,'')
 
 
 def downloadStandardQuality(videoLink):
