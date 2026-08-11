@@ -1,44 +1,59 @@
-from pytube import YouTube
+from pathlib import Path
+
+from yt_dlp import YoutubeDL
+from yt_dlp.utils import sanitize_filename
+
+
+title = None
+YTDLP_RUNTIME_OPTIONS = {
+    "js_runtimes": {"node": {}},
+    "remote_components": ["ejs:github"],
+}
 
 
 def initDownload(videoLink):
-    global youtubeObject
     global title
-    youtubeObject = YouTube(videoLink)
-    title = youtubeObject.title
-    for character in title:
-        if not character.isalnum():
-            title = title.replace(character,'')
+    options = YTDLP_RUNTIME_OPTIONS | {"quiet": True, "skip_download": True}
+    with YoutubeDL(options) as downloader:
+        metadata = downloader.extract_info(videoLink, download=False)
+    title = sanitize_filename(metadata["title"], restricted=True)
 
 
 def downloadStandardQuality(videoLink):
     initDownload(videoLink)
-    youtubeObject.streams.filter(progressive=True, file_extension='mp4').order_by(
-        'resolution').desc().first().download(None, title + '.mp4')
+    _download(videoLink, "best[ext=mp4][height<=720]/best[height<=720]", title + ".mp4")
 
 
 def downloadBestQualityAvailable(videoLink):
-    #initDownload(videoLink)
     downloadVideo(videoLink)
     downloadAudio(videoLink)
 
 
 def downloadVideo(videoLink):
     initDownload(videoLink)
-    video = youtubeObject.streams.filter(file_extension='mp4').order_by('resolution').order_by(
-        'resolution').desc().first()
-    videoFile = title + '_video.mp4'
-    video.download(None, videoFile)
+    _download(videoLink, "bestvideo[ext=mp4]/bestvideo", title + "_video.mp4")
 
 
 def downloadAudio(videoLink):
     initDownload(videoLink)
-    audio = youtubeObject.streams.filter(file_extension='mp4', only_audio=True).desc().first()
-    audioFile = title + '_audio.mp4'
-    audio.download(None, audioFile)
+    _download(videoLink, "bestaudio[ext=m4a]/bestaudio", title + "_audio.mp4")
+
 
 def downloadAudioOnly(videoLink):
-    initDownload(videoLink)
-    audio = youtubeObject.streams.filter(file_extension='mp4', only_audio=True).desc().first()
-    audioFile = title + '_audio.mp4'
-    audio.download(None, audioFile)
+    downloadAudio(videoLink)
+
+
+def _download(videoLink, formatSelector, outputName):
+    outputTemplate = str(Path(outputName).with_suffix("")) + ".%(ext)s"
+    options = {
+        "format": formatSelector,
+        "outtmpl": outputTemplate,
+        "quiet": False,
+        **YTDLP_RUNTIME_OPTIONS,
+        "postprocessors": [{
+            "key": "FFmpegVideoConvertor",
+            "preferedformat": "mp4",
+        }],
+    }
+    with YoutubeDL(options) as downloader:
+        downloader.download([videoLink])
