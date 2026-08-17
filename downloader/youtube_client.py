@@ -1,4 +1,3 @@
-import glob
 import os
 from pathlib import Path
 import time
@@ -113,8 +112,10 @@ class YouTubeClient:
             output_path.with_name(f"{output_path.name}.part"),
             output_path.with_name(f"{output_path.name}.ytdl"),
         }
-        stem_pattern = f"{glob.escape(output_path.stem)}.*"
-        for sibling in output_path.parent.glob(stem_pattern):
+        sibling_prefix = f"{output_path.stem}."
+        for sibling in output_path.parent.iterdir():
+            if not sibling.name.startswith(sibling_prefix):
+                continue
             candidates.add(sibling)
             candidates.add(sibling.with_name(f"{sibling.name}.part"))
             candidates.add(sibling.with_name(f"{sibling.name}.ytdl"))
