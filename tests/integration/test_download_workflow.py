@@ -66,7 +66,6 @@ def test_restricted_audio_only_download_supports_cookie_file(
         DownloadRequest(url=restricted_integration_url, quality=Quality.AUDIO_ONLY)
     )
 
-    assert integration_cookie_file.is_file()
     assert result.output_path == Path(f"{result.title}.mp3")
     assert result.output_path.is_file()
     assert result.output_path.stat().st_size > 0

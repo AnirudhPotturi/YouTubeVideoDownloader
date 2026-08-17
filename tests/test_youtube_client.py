@@ -26,6 +26,11 @@ class FakeYoutubeDL:
 def clear_environment(monkeypatch):
     monkeypatch.delenv("YTDLP_COOKIES_FILE", raising=False)
     monkeypatch.delenv("YTDLP_COOKIES_FROM_BROWSER", raising=False)
+    FakeYoutubeDL.last_options = None
+    FakeYoutubeDL.error = None
+    yield
+    FakeYoutubeDL.last_options = None
+    FakeYoutubeDL.error = None
 
 
 def test_download_uses_cookie_file_and_bounded_retries(monkeypatch, tmp_path):
@@ -118,4 +123,3 @@ def test_download_errors_are_reported_with_specific_messages(
     assert not output_path.exists()
     assert not (tmp_path / "output.m4a").exists()
     assert not (tmp_path / "output.m4a.part").exists()
-    FakeYoutubeDL.error = None
