@@ -127,20 +127,27 @@ flowchart LR
 | Best available | `<title>.mp4` | `<title>_video.mp4`, `<title>_audio.mp4` |
 | Audio only | `<title>.mp3` | `<title>_audio.mp4` |
 
-Temporary files are removed after successful processing. If processing is interrupted, remove leftover temporary files manually before retrying.
+Temporary files are removed after successful processing, and failed downloads clean up partial media files before returning an error.
 
 ## Videos Rejected by YouTube
 
-YouTube may reject an otherwise public video's media stream with `HTTP 403`, even when metadata is available. This is controlled by YouTube and can be specific to a video, player session, or network. The app reports this condition without creating a final file. Follow [issue #6](https://github.com/AnirudhPotturi/YouTubeVideoDownloader/issues/6) for the planned reliability improvements.
+YouTube may reject an otherwise public video's media stream with `HTTP 403`, even when metadata is available. This is controlled by YouTube and can be specific to a video, player session, or network. The app retries bounded transient failures, cleans up partial media files, and reports this condition without creating a final file.
 
-For videos that require an authenticated session, sign in to YouTube in a local browser and set `YTDLP_COOKIES_FROM_BROWSER` before starting the app. Supported values include `chrome`, `edge`, and `firefox`.
+For videos that require an authenticated session, either sign in to YouTube in a local browser and set `YTDLP_COOKIES_FROM_BROWSER` before starting the app, or export a Netscape-format `cookies.txt` file and point `YTDLP_COOKIES_FILE` to it.
 
 ```powershell
 $env:YTDLP_COOKIES_FROM_BROWSER = "edge"
 .\run.ps1
 ```
 
-The app reads the browser's cookie store only when this variable is set. Do not commit cookies or browser-profile data to the repository.
+```powershell
+$env:YTDLP_COOKIES_FILE = "C:\Users\you\Downloads\cookies.txt"
+.\run.ps1
+```
+
+Live browser-cookie extraction can fail while Edge or another Chromium-based browser still has its cookie database locked. In that case, close the browser and its background processes, or use `YTDLP_COOKIES_FILE` instead.
+
+Cookie files and browser profiles are credentials. Keep them only on your local machine, do not commit them, and note that `.gitignore` excludes common `cookies.txt` filenames.
 
 ## Testing
 
@@ -152,3 +159,11 @@ python -m pytest -m integration
 ```
 
 The integration suite verifies live metadata retrieval and the audio-only download, conversion, and temporary-file cleanup flow.
+
+Restricted-video coverage is opt-in and requires both `YOUTUBE_RESTRICTED_INTEGRATION_URL` and `YTDLP_COOKIES_FILE`.
+
+```powershell
+$env:YOUTUBE_RESTRICTED_INTEGRATION_URL = "https://www.youtube.com/watch?v=..."
+$env:YTDLP_COOKIES_FILE = "C:\Users\you\Downloads\cookies.txt"
+python -m pytest -m integration
+```
