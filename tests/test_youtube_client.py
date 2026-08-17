@@ -123,3 +123,19 @@ def test_download_errors_are_reported_with_specific_messages(
     assert not output_path.exists()
     assert not (tmp_path / "output.m4a").exists()
     assert not (tmp_path / "output.m4a.part").exists()
+
+
+def test_partial_cleanup_escapes_glob_characters_in_output_names(monkeypatch, tmp_path):
+    monkeypatch.setattr("downloader.youtube_client.YoutubeDL", FakeYoutubeDL)
+    FakeYoutubeDL.error = DownloadError("ERROR: timed out")
+    output_path = tmp_path / "out[put].mp4"
+    output_path.write_bytes(b"partial")
+    (tmp_path / "out[put].m4a").write_bytes(b"partial")
+    (tmp_path / "outp.m4a").write_bytes(b"keep")
+
+    with pytest.raises(RuntimeError, match="network or YouTube connectivity problem"):
+        YouTubeClient().download("https://example.com/video", "best", output_path)
+
+    assert not output_path.exists()
+    assert not (tmp_path / "out[put].m4a").exists()
+    assert (tmp_path / "outp.m4a").exists()
