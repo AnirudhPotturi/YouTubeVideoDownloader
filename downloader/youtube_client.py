@@ -112,6 +112,9 @@ class YouTubeClient:
             output_path.with_name(f"{output_path.name}.part"),
             output_path.with_name(f"{output_path.name}.ytdl"),
         }
+        if not output_path.parent.exists():
+            return
+
         sibling_prefix = f"{output_path.stem}."
         for sibling in output_path.parent.iterdir():
             if not sibling.name.startswith(sibling_prefix):
