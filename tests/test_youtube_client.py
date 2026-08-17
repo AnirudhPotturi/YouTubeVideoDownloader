@@ -53,6 +53,11 @@ def test_download_uses_cookie_file_and_bounded_retries(monkeypatch, tmp_path):
     [
         ('{"cookies":[]}', "not a valid Netscape-format cookies.txt file"),
         ("example.com\tTRUE\t/\tFALSE\n", "not a valid Netscape-format cookies.txt file"),
+        (
+            "youtube.com\tTRUE\t/\tFALSE\t0\tSID\tvalue\n"
+            "example.com\tTRUE\t/\tFALSE\n",
+            "not a valid Netscape-format cookies.txt file",
+        ),
     ],
 )
 def test_invalid_cookie_file_is_reported_before_download(

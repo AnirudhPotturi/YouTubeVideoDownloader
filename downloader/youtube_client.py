@@ -99,12 +99,11 @@ class YouTubeClient:
                     "The configured YTDLP_COOKIES_FILE is not a valid Netscape-format "
                     "cookies.txt file."
                 )
-            if len(line.split("\t")) != 7:
+            if len(stripped_line.split("\t")) != 7:
                 raise RuntimeError(
                     "The configured YTDLP_COOKIES_FILE is not a valid Netscape-format "
                     "cookies.txt file."
                 )
-            return
 
     @staticmethod
     def _cleanup_partial_downloads(output_path: Path, started_at: float) -> None:
